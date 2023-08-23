@@ -40,7 +40,7 @@ async def main():
                 continue
             img = await page.J("#yzm_img")
             img = await img.getProperty("src")
-            with open(f"./real_img/{filename}_{int(time.time())}.png", "wb") as f:
+            with open(f"./real_captcha/{filename}_{int(time.time())}.png", "wb") as f:
                 f.write(base64.b64decode(img.toString()[31:]))
             await page.click("#yzm_img")
     finally:
