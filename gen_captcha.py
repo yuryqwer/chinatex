@@ -20,8 +20,8 @@ __all__ = ['ImageCaptcha']
 
 ColorTuple = t.Union[t.Tuple[int, int, int], t.Tuple[int, int, int, int]]
 
-DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-DEFAULT_FONTS = [os.path.join(DATA_DIR, 'DroidSansMono.ttf')]
+FONT_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'font')
+DEFAULT_FONTS = [os.path.join(FONT_DIR, 'simsun.ttc')]
 
 
 class ImageCaptcha:
@@ -29,11 +29,6 @@ class ImageCaptcha:
 
     Many of the codes are borrowed from wheezy.captcha, with a modification
     for memory and developer friendly.
-
-    ImageCaptcha has one built-in font, DroidSansMono, which is licensed under
-    Apache License 2. You should always use your own fonts::
-
-        captcha = ImageCaptcha(fonts=['/path/to/A.ttf', '/path/to/B.ttf'])
 
     You can put as many fonts as you like. But be aware of your memory, all of
     the fonts are loaded into your memory, so keep them a lot, but not too
@@ -188,7 +183,7 @@ class ImageCaptcha:
         im = self.create_captcha_image(chars, color, background)
         self.create_noise_dots(im, color)
         self.create_noise_curve(im, color)
-        im = im.filter(SMOOTH)
+        # im = im.filter(SMOOTH)
         return im
 
     def generate(self, chars: str, format: str = 'png') -> BytesIO:
@@ -224,3 +219,7 @@ def random_color(
     if opacity is None:
         return (red, green, blue)
     return (red, green, blue, opacity)
+
+
+if __name__ == "__main__":
+    ImageCaptcha().generate_image("你好世界").save("test.png")
