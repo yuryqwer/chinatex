@@ -6,7 +6,7 @@ def chinese():
     chinese_count = 0
     chinese_word = set()
 
-    for filename in os.listdir("./real_img"):
+    for filename in os.listdir("./real_captcha"):
         color, text, *_ = filename[:-4].split("_")
         for c in text:
             if 'CJK' in unicodedata.name(c):
@@ -26,4 +26,4 @@ def simulate(word_count, chinese_count):
 
 
 print(chinese())
-print(simulate(650, chinese()[1]))
+print(simulate(700, chinese()[1]))
