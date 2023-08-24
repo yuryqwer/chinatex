@@ -7,11 +7,11 @@
 """
 
 import os
+import time
 import random
 import typing as t
 from PIL.Image import new as createImage, Image, QUAD, BILINEAR
 from PIL.ImageDraw import Draw, ImageDraw
-from PIL.ImageFilter import SMOOTH
 from PIL.ImageFont import FreeTypeFont, truetype
 from io import BytesIO
 
@@ -21,7 +21,14 @@ __all__ = ['ImageCaptcha']
 ColorTuple = t.Union[t.Tuple[int, int, int], t.Tuple[int, int, int, int]]
 
 FONT_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'font')
-DEFAULT_FONTS = [os.path.join(FONT_DIR, 'simsun.ttc')]
+DEFAULT_FONTS = (os.path.join(FONT_DIR, 'simsun.ttc'),)
+
+COLOR_MAP = {
+    "B": (0, 0, 0),
+    "U": (0, 0, 255),
+    "R": (255, 0, 0),
+    "Y": (255, 255, 0)
+}
 
 
 class ImageCaptcha:
@@ -45,12 +52,12 @@ class ImageCaptcha:
             self,
             width: int = 160,
             height: int = 60,
-            fonts: t.Optional[t.List[str]] = None,
+            fonts: t.Optional[t.Tuple[str]] = None,
             font_sizes: t.Optional[t.Tuple[int]] = None):
         self._width = width
         self._height = height
         self._fonts = fonts or DEFAULT_FONTS
-        self._font_sizes = font_sizes or (42, 50, 56)
+        self._font_sizes = font_sizes or (42,)
         self._truefonts: t.List[FreeTypeFont] = []
 
     @property
@@ -59,8 +66,7 @@ class ImageCaptcha:
             return self._truefonts
         self._truefonts = [
             truetype(n, s)
-            for n in self._fonts
-            for s in self._font_sizes
+            for n, s in zip(self._fonts, self._font_sizes)
         ]
         return self._truefonts
 
@@ -97,7 +103,10 @@ class ImageCaptcha:
             c: str,
             draw: ImageDraw,
             color: ColorTuple) -> Image:
-        font = random.choice(self.truefonts)
+        if c.isdigit() or c.encode('UTF-8').isalpha():
+            font = self.truefonts[0]
+        else:
+            font = self.truefonts[1]
 
         left, top, right, bottom = draw.textbbox((0, 0), c, font=font)
         w = int((right - left)*1.7) or 1
@@ -134,7 +143,7 @@ class ImageCaptcha:
     def create_captcha_image(
             self,
             chars: str,
-            color: ColorTuple,
+            colors: t.List[ColorTuple],
             background: ColorTuple) -> Image:
         """Create the CAPTCHA image itself.
 
@@ -148,7 +157,7 @@ class ImageCaptcha:
         draw = Draw(image)
 
         images: t.List[Image] = []
-        for c in chars:
+        for c, color in zip(chars, colors):
             if random.random() > 0.5:
                 images.append(self._draw_character(" ", draw, color))
             images.append(self._draw_character(c, draw, color))
@@ -178,12 +187,23 @@ class ImageCaptcha:
 
         :param chars: text to be generated.
         """
+        if not "_" in chars:
+            raise ValueError("should contain symbol `_`")
+        color, text, *_ = chars.split("_")
+        if len(color) != len(text):
+            raise ValueError("color and text should have the same length")
+        for c in color:
+            if not c in COLOR_MAP:
+                raise ValueError(f"can not recognize color `{c}`")
+        for t in text:
+            if not(t.isdigit() or t.encode('UTF-8').isalpha() or '\u4e00' <= t <= '\u9fff'):
+                raise ValueError(f"can not recognize char `{t}`")
+
         background = random_color(238, 255)
-        color = random_color(10, 200, random.randint(220, 255))
-        im = self.create_captcha_image(chars, color, background)
+        colors = [COLOR_MAP.get(c) for c in color]
+        im = self.create_captcha_image(text, colors, background)
         self.create_noise_dots(im, color)
         self.create_noise_curve(im, color)
-        # im = im.filter(SMOOTH)
         return im
 
     def generate(self, chars: str, format: str = 'png') -> BytesIO:
@@ -222,4 +242,9 @@ def random_color(
 
 
 if __name__ == "__main__":
-    ImageCaptcha().generate_image("你好世界").save("test.png")
+    ImageCaptcha(
+        width=120, 
+        height=50,
+        fonts=("./font/actionj.ttf", "./font/simsun.ttc"),
+        font_sizes=(18, 19)
+    ).generate_image("UUUU_ACDD").save(f"./BBBB_你好世界_{int(time.time())}.png")
