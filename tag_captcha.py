@@ -20,8 +20,8 @@ async def main():
         await page.waitForSelector("#fpdm")
         await page.type("#fpdm", "032002200511")
         await page.type("#fphm", "98170237")
-        await page.click("#pageshow > div.upgrade > a")
-        await page.click("#pageshow > div.teachyou > a.teachyou_close")
+        # await page.click("#pageshow > div.upgrade > a")
+        # await page.click("#pageshow > div.teachyou > a.teachyou_close")
         while True:
             filename = input("Please tag the picture: ")
             if filename == "": # picture cannot be recognized

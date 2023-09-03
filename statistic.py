@@ -13,7 +13,7 @@ def chinese():
                 chinese_count += 1
                 chinese_word.add(c)
 
-    return len(chinese_word), chinese_count
+    return len(chinese_word), chinese_count, chinese_word
 
 
 def simulate(word_count, chinese_count):
@@ -25,5 +25,10 @@ def simulate(word_count, chinese_count):
     return len(chinese_word)
 
 
-print(chinese())
-print(simulate(700, chinese()[1]))
+length, count, word = chinese()
+print(length, simulate(700, count))
+
+with open("./font/chinese7000.txt", encoding="utf-8") as f:
+    word_list = [i for i in f.readline()]
+
+print(sorted(word_list.index(w) for w in word))
