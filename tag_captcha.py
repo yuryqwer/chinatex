@@ -29,14 +29,14 @@ async def main():
                 print("Cannot recognize, change another one.")
                 continue
             if not "_" in filename:
-                print("Wrong format!")
+                print("Wrong format! Should seperate with _")
                 continue
             color, text = filename.split("_")
             if len(color) != len(text):
-                print("Wrong format!")
+                print("Wrong format! Character number mismatch.")
                 continue
             if not all(i in (j for j in "YRBU") for i in color):
-                print("Wrong format!")
+                print("Wrong format! Color should only contain YRBU.")
                 continue
             img = await page.J("#yzm_img")
             img = await img.getProperty("src")
